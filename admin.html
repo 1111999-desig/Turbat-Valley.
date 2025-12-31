@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - My Land Property</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .admin-header {
+            background: var(--dark-secondary);
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            padding: 8px 16px;
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--dark);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-box {
+            background: var(--dark-secondary);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Status Controls */
+        .status-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .status-btn {
+            padding: 10px;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .status-btn.available {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .status-btn.sold {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .status-btn.reserved {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .status-btn:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2 class="form-title">Admin Login</h2>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <input type="password" id="password" class="form-input" placeholder="Enter Password" required>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Content -->
+    <div id="admin-content" style="display: none;">
+        <header class="admin-header">
+            <div class="container header-content">
+                <div class="admin-title">Project Management</div>
+                <div>
+                    <button class="status-btn available" onclick="showAddProjectModal()" style="margin-right: 10px;">+
+                        Add New Property</button>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <section class="property-content">
+            <div class="container">
+                <div id="projects-list" class="projects-grid">
+                    <!-- Projects rendered here JS -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Add/Edit Project Modal -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeProjectModal()">&times;</button>
+            <h2 class="form-title" id="modal-title">Add New Property</h2>
+            <form id="projectForm" onsubmit="handleProjectSubmit(event)">
+                <input type="hidden" id="project-id">
+                <div class="form-group">
+                    <label class="form-label">Property Title</label>
+                    <input type="text" id="project-title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="project-desc" class="form-input" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price Label</label>
+                    <input type="text" id="project-price" class="form-input" placeholder="e.g. From PKR 5M" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status Label</label>
+                    <input type="text" id="project-status" class="form-input" placeholder="e.g. Available, New Launch"
+                        required>
+                </div>
+                <div class="form-group">
+                    <div class="form-group">
+                        <label class="form-label">Project Image</label>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="file" id="project-image-file" class="form-input" accept="image/*"
+                                onchange="handleImageSelect(this)">
+                            <img id="image-preview" src="" alt="Preview"
+                                style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; display: none; border: 1px solid rgba(255,255,255,0.1); background: #1a1a2e;">
+                            <!-- Hidden input to store the actual value (path or base64) -->
+                            <input type="hidden" id="project-image-base64">
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;">
+                            Note: Large images may slow down the app (Local Storage limit). Keep it under 1MB.
+                        </p>
+                    </div>
+
+                    <!-- Map Editor Removed -->
+
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="submit" class="submit-btn"
+                            style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">Save
+                            Property</button>
+                        <button type="button" class="submit-btn"
+                            style="background: var(--dark); border: 1px solid rgba(255,255,255,0.2);"
+                            onclick="closeProjectModal()">Cancel</button>
+                    </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Separate Map Editor Modal -->
+    <div id="mapModal" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <button class="close-modal" onclick="closeMapModal()">&times;</button>
+            <h2 class="form-title">Manage Plot Layout</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                Click plots to cycle status: <span style="color:#10b981">Available</span> -> <span
+                    style="color:#ef4444">Sold</span> -> <span style="color:#f59e0b">Reserved</span>
+            </p>
+
+            <div id="admin-map-container" class="plot-map">
+                <!-- Map rendered here -->
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="saveMapLayout()" class="submit-btn"
+                    style="width: auto; padding: 0 30px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">Save
+                    Layout</button>
+                <button onclick="closeMapModal()" class="submit-btn"
+                    style="width: auto; padding: 0 30px; background: var(--dark); border: 1px solid rgba(255,255,255,0.2);">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const ADMIN_PASS = "admin123";
+        let currentEditingProject = null;
+
+        // Login Logic
+        function handleLogin(e) {
+            e.preventDefault();
+            if (document.getElementById('password').value === ADMIN_PASS) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                renderProjectsList();
+            } else {
+                alert('Incorrect Password');
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isAdminLoggedIn');
+            location.reload();
+        }
+
+        // Initialize
+        if (sessionStorage.getItem('isAdminLoggedIn') === 'true') {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('admin-content').style.display = 'block';
+            renderProjectsList();
+        }
+
+        // Image Handling
+        function handleImageSelect(input) {
+            const file = input.files[0];
+            if (file) {
+                // Size check (Limit to ~500KB to be safe with localStorage)
+                if (file.size > 500 * 1024) {
+                    alert('File is too large! Please select an image under 500KB.');
+                    input.value = ''; // Clear selection
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const base64 = e.target.result;
+                    document.getElementById('image-preview').src = base64;
+                    document.getElementById('image-preview').style.display = 'block';
+                    document.getElementById('project-image-base64').value = base64;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Projects List Rendering
+        function renderProjectsList() {
+            const list = document.getElementById('projects-list');
+            list.innerHTML = '';
+            list.style.display = 'grid';
+            list.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
+            list.style.gap = '30px';
+
+            const projects = DB.getProjects();
+
+            if (projects.length === 0) {
+                list.innerHTML = '<p style="color: white; text-align: center; width: 100%;">No properties found. Add one!</p>';
+                return;
+            }
+
+            projects.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.innerHTML = `
+                    <div class="project-image" style="height: 200px;">
+                        <img src="${p.image}" alt="${p.title}" style="width:100%; height:100%; object-fit:cover;">
+                        <div class="project-overlay">
+                            <span class="project-status">${p.status}</span>
+                        </div>
+                    </div>
+                    <div class="project-info">
+                        <h3>${p.title}</h3>
+                        <p style="color: var(--primary); font-weight: bold; margin-bottom: 15px;">${p.price}</p>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <button class="status-btn available" onclick="editProject('${p.id}')" style="flex: 1; min-width:80px; border: 1px solid var(--success); background: transparent; font-size:0.8rem;">Edit Info</button>
+                            <button class="status-btn reserved" onclick="openMapEditorModal('${p.id}')" style="flex: 1; min-width:80px; border: 1px solid var(--warning); background: transparent; font-size:0.8rem;">Map</button>
+                            <button class="status-btn sold" onclick="deleteProject('${p.id}')" style="flex: 1; min-width:80px; border: 1px solid var(--danger); background: transparent; font-size:0.8rem;">Delete</button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // Modal Logic
+        function showAddProjectModal() {
+            currentEditingProject = null;
+            document.getElementById('modal-title').textContent = 'Add New Property';
+            document.getElementById('projectForm').reset();
+            document.getElementById('project-id').value = '';
+
+            // Reset image fields
+            document.getElementById('image-preview').src = '';
+            document.getElementById('image-preview').style.display = 'none';
+            document.getElementById('project-image-base64').value = '';
+
+            document.getElementById('projectModal').classList.add('active');
+        }
+
+        function editProject(id) {
+            const project = DB.getProject(id);
+            if (!project) return;
+
+            currentEditingProject = project;
+            document.getElementById('modal-title').textContent = 'Edit Property';
+            document.getElementById('project-id').value = project.id;
+            document.getElementById('project-title').value = project.title;
+            document.getElementById('project-desc').value = project.description;
+            document.getElementById('project-price').value = project.price;
+            document.getElementById('project-status').value = project.status;
+
+            // Set existing image
+            if (project.image) {
+                document.getElementById('image-preview').src = project.image;
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('project-image-base64').value = project.image;
+            } else {
+                document.getElementById('image-preview').style.display = 'none';
+                document.getElementById('project-image-base64').value = '';
+            }
+
+            document.getElementById('projectModal').classList.add('active');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('active');
+        }
+
+        function deleteProject(id) {
+            if (confirm('Are you sure you want to delete this property? This cannot be undone.')) {
+                DB.deleteProject(id);
+                renderProjectsList();
+            }
+        }
+
+        // Form Submit
+        function handleProjectSubmit(e) {
+            e.preventDefault();
+
+            // Use the base64 string from hidden input
+            // If empty (no file selected), fallback:
+            // 1. If editing, keep old. (Actually logic above pre-fills hidden input, so it should be fine)
+            // 2. If new, default image.
+
+            let imgData = document.getElementById('project-image-base64').value;
+            if (!imgData) {
+                // Fallback for new projects if user didn't pick an image
+                imgData = '5.jpeg';
+            }
+
+            const newProject = {
+                id: document.getElementById('project-id').value || Date.now().toString(),
+                title: document.getElementById('project-title').value,
+                description: document.getElementById('project-desc').value,
+                price: document.getElementById('project-price').value,
+                status: document.getElementById('project-status').value,
+                image: imgData,
+                plots: currentEditingProject ? currentEditingProject.plots : generateDefaultPlots()
+            };
+
+            DB.saveProject(newProject);
+            closeProjectModal();
+            renderProjectsList();
+        }
+
+        // Map Editor Modal Logic
+        let mapEditingId = null;
+        let currentMapProject = null;
+
+        function openMapEditorModal(id) {
+            const project = DB.getProject(id);
+            if (!project) return;
+
+            mapEditingId = id;
+            document.getElementById('mapModal').classList.add('active');
+            renderMapEditor(project, 'admin-map-container');
+        }
+
+        function closeMapModal() {
+            document.getElementById('mapModal').classList.remove('active');
+            mapEditingId = null;
+            currentMapProject = null;
+        }
+
+        function saveMapLayout() {
+            if (!currentMapProject) return;
+            DB.saveProject(currentMapProject);
+            closeMapModal();
+            alert('Map layout saved!');
+        }
+
+        // Map Editor Logic
+        function generateDefaultPlots() {
+            const plots = {};
+            getPlotLayout().forEach(item => {
+                if (item.type !== 'road') plots[item.id] = 'available';
+            });
+            return plots;
+        }
+
+        function renderMapEditor(project, containerId = 'admin-map') {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            // Update the global ref so we can save it later
+            currentMapProject = project;
+            container.innerHTML = '';
+
+            const layout = getPlotLayout();
+            const plots = project.plots || generateDefaultPlots();
+
+            layout.forEach(item => {
+                if (item.type === 'road') {
+                    const road = document.createElement('div');
+                    road.className = 'main-road';
+                    road.textContent = 'ROAD';
+                    container.appendChild(road);
+                } else {
+                    const status = plots[item.id] || 'available';
+                    const plot = document.createElement('div');
+                    plot.className = `plot ${status}`;
+                    plot.textContent = item.id;
+
+                    // Allow cycling status on click
+                    plot.onclick = function () {
+                        cyclePlotStatus(project, item.id, containerId);
+                    };
+
+                    container.appendChild(plot);
+                }
+            });
+        }
+
+        function cyclePlotStatus(project, plotId, containerId) {
+            console.log('Clicked plot:', plotId);
+            const statuses = ['available', 'sold', 'reserved'];
+            const current = project.plots[plotId] || 'available';
+            const next = statuses[(statuses.indexOf(current) + 1) % 3];
+
+            project.plots[plotId] = next; // Update memory object
+            renderMapEditor(project, containerId); // Re-render to show change
+        }
+    </script>
+</body>
+
+</html>

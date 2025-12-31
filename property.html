@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Details - My Land Property and Developers</title>
+    <meta name="description"
+        content="View detailed information about this exclusive property including plot map and availability.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .property-header {
+            padding: 120px 0 60px;
+            background: var(--dark-secondary);
+        }
+
+        .property-content {
+            padding: 60px 0;
+            background: var(--dark);
+        }
+
+        .property-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .property-gallery img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+
+        .property-gallery img:hover {
+            transform: scale(1.05);
+        }
+
+        .property-details {
+            background: var(--dark-secondary);
+            padding: 40px;
+            border-radius: var(--border-radius);
+            margin-bottom: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 32px;
+            margin-top: 30px;
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .detail-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .plot-map-section {
+            background: var(--dark-secondary);
+            padding: 50px;
+            border-radius: var(--border-radius);
+            margin-bottom: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .map-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: center;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .plot-map {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .main-road {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(90deg,
+                    rgba(100, 100, 120, 0.3) 0%,
+                    rgba(100, 100, 120, 0.5) 45%,
+                    rgba(255, 255, 255, 0.1) 48%,
+                    rgba(255, 255, 255, 0.2) 50%,
+                    rgba(255, 255, 255, 0.1) 52%,
+                    rgba(100, 100, 120, 0.5) 55%,
+                    rgba(100, 100, 120, 0.3) 100%);
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+            border-top: 2px dashed rgba(255, 255, 255, 0.3);
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 2px;
+        }
+
+        .plot {
+            aspect-ratio: 1;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(10px);
+        }
+
+        .plot:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-lg);
+            z-index: 10;
+        }
+
+        .plot.available {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .plot.available:hover {
+            background: rgba(16, 185, 129, 0.35);
+        }
+
+        .plot.sold {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger);
+            color: var(--danger);
+            cursor: not-allowed;
+        }
+
+        .plot.reserved {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: var(--warning);
+            color: var(--warning);
+            cursor: not-allowed;
+        }
+
+        .map-legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: var(--border-radius-sm);
+            border: 2px solid;
+        }
+
+        .legend-color.available {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--success);
+        }
+
+        .legend-color.sold {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: var(--danger);
+        }
+
+        .legend-color.reserved {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: var(--warning);
+        }
+
+        .book-btn {
+            display: block;
+            width: fit-content;
+            margin: 40px auto 0;
+            padding: 18px 60px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-md);
+        }
+
+        .book-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        /* Booking Form Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--dark-secondary);
+            padding: 50px;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-glow);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: var(--transition);
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        .form-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 20px;
+            background: var(--dark);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 30px 20px;
+            }
+
+            .plot-map {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .plot-map-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/923222082888" target="_blank" class="whatsapp-float" aria-label="Contact us on WhatsApp">
+        <svg viewBox="0 0 32 32" fill="currentColor">
+            <path
+                d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 8.135-2.135c2.369 1.313 5.047 2.135 7.865 2.135 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.385c-2.547 0-5.010-0.709-7.158-2.051l-0.513-0.301-5.321 1.397 1.417-5.281-0.329-0.533c-1.449-2.341-2.213-5.035-2.213-7.795 0-7.72 6.28-14 14-14s14 6.28 14 14-6.28 14-14 14zM23.234 19.807c-0.406-0.203-2.394-1.181-2.766-1.316-0.371-0.134-0.641-0.203-0.912 0.203s-1.047 1.316-1.284 1.588c-0.236 0.271-0.473 0.305-0.879 0.102-0.406-0.203-1.713-0.632-3.263-2.011-1.205-1.073-2.019-2.399-2.256-2.805s-0.025-0.625 0.178-0.827c0.183-0.183 0.406-0.473 0.609-0.711s0.271-0.406 0.406-0.677c0.135-0.271 0.068-0.508-0.034-0.711s-0.912-2.196-1.249-3.009c-0.329-0.792-0.661-0.684-0.912-0.698-0.236-0.012-0.507-0.015-0.778-0.015s-0.711 0.102-1.082 0.508c-0.372 0.406-1.419 1.385-1.419 3.381s1.453 3.922 1.655 4.194c0.203 0.271 2.824 4.319 6.845 6.054 0.956 0.413 1.703 0.659 2.285 0.844 0.961 0.305 1.835 0.262 2.527 0.159 0.771-0.115 2.394-0.978 2.731-1.923s0.337-1.755 0.236-1.923c-0.102-0.169-0.372-0.271-0.778-0.473z" />
+        </svg>
+    </a>
+
+    <!-- Property Header -->
+    <header class="property-header">
+        <div class="container">
+            <a href="projects.html" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back to Projects
+            </a>
+            <h1 id="property-title" class="section-title">Turbat Valley</h1>
+        </div>
+    </header>
+
+    <!-- Property Content -->
+    <section class="property-content">
+        <div class="container">
+            <!-- Property Gallery -->
+            <div class="property-gallery">
+                <img src="1.jpeg" alt="Property View 1">
+                <img src="2.jpeg" alt="Property View 2">
+                <img src="3.jpeg" alt="Property View 3">
+                <img src="4.jpeg" alt="Property View 4">
+                <img src="5.jpeg" alt="Property View 5">
+                <img src="6.jpeg" alt="Property View 6">
+            </div>
+
+            <!-- Property Details -->
+            <div class="property-details">
+                <h2 class="section-title" style="font-size: 1.8rem; text-align: left; margin-bottom: 10px;">Property
+                    Details</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 20px;">Premium residential plots with modern
+                    amenities and infrastructure</p>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">Total Area</div>
+                        <div class="detail-value">5 Acres</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Plot Size</div>
+                        <div class="detail-value">5 Marla</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Plot Price</div>
+                        <div class="detail-value">PKR 2.5M</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Available Plots</div>
+                        <div class="detail-value">24</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plot Map -->
+            <div class="plot-map-section">
+                <h2 class="map-title">Interactive Plot Map</h2>
+
+                <div class="plot-map" id="plotMap">
+                    <!-- Plots will be rendered dynamically via JS -->
+                    <div class="main-road">MAIN ROAD</div>
+                </div>
+
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-color available"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color sold"></div>
+                        <span>Sold</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color reserved"></div>
+                        <span>Reserved</span>
+                    </div>
+                </div>
+
+                <button class="book-btn" onclick="openBookingModal()">Book Your Plot Now</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Booking Form Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeBookingModal()">&times;</button>
+            <h2 class="form-title">Book Your Plot</h2>
+            <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label" for="username">Full Name *</label>
+                    <input type="text" id="username" name="username" class="form-input" required
+                        placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="cnic">CNIC Number *</label>
+                    <input type="text" id="cnic" name="cnic" class="form-input" required placeholder="XXXXX-XXXXXXX-X"
+                        pattern="[0-9]{5}-[0-9]{7}-[0-9]{1}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" class="form-input" required placeholder="+92 XXX XXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" class="form-input" required
+                        placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="plotNumber">Selected Plot</label>
+                    <input type="text" id="plotNumber" name="plotNumber" class="form-input"
+                        placeholder="Enter plot number (e.g., A3, B5)">
+                </div>
+                <button type="submit" class="submit-btn">Submit Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 My Land Property and Developers. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Parse URL ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('id');
+
+        let currentProject = null;
+
+        // Render Page Data
+        document.addEventListener('DOMContentLoaded', () => {
+            if (projectId) {
+                currentProject = DB.getProject(projectId);
+            }
+
+            // Fallback to first project if no ID or not found (for dev/demo purposes)
+            // or just to first project if not found.
+            if (!currentProject) {
+                const all = DB.getProjects();
+                if (all.length > 0) currentProject = all[0];
+            }
+
+            if (currentProject) {
+                // Update Page Title
+                document.title = `${currentProject.title} - Property Details`;
+                document.getElementById('property-title').textContent = currentProject.title;
+
+                // Note: Details rendering is kept static as per current constraints, 
+                // but title and map are now dynamic.
+
+                renderPropertyMap();
+            }
+        });
+
+        // Render Map Dynamically
+        function renderPropertyMap() {
+            const mapContainer = document.getElementById('plotMap');
+            mapContainer.innerHTML = ''; // Clear container
+
+            const layout = getPlotLayout();
+            const plotsData = currentProject ? (currentProject.plots || {}) : {};
+
+            console.log('Rendering Map for:', currentProject ? currentProject.title : 'No Project');
+            console.log('Plots Data:', plotsData);
+
+            layout.forEach(item => {
+                if (item.type === 'road') {
+                    const road = document.createElement('div');
+                    road.className = 'main-road';
+                    road.textContent = 'ROAD';
+                    mapContainer.appendChild(road);
+                } else {
+                    const status = plotsData[item.id] || 'available';
+                    const plot = document.createElement('div');
+                    plot.className = `plot ${status}`;
+                    plot.textContent = item.id;
+                    plot.setAttribute('data-plot', item.id);
+
+                    if (status === 'available') {
+                        plot.onclick = () => openBookingModal(item.id);
+                        plot.style.cursor = 'pointer';
+                    } else {
+                        plot.style.cursor = 'not-allowed';
+                    }
+
+                    mapContainer.appendChild(plot);
+                }
+            });
+        }
+
+        function openBookingModal(plotNumber = '') {
+            const modal = document.getElementById('bookingModal');
+            const plotInput = document.getElementById('plotNumber');
+            if (plotNumber) {
+                plotInput.value = plotNumber;
+            }
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBookingModal() {
+            const modal = document.getElementById('bookingModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function handleBookingSubmit(event) {
+            event.preventDefault();
+
+            const formData = {
+                project: currentProject ? currentProject.title : 'Unknown',
+                username: document.getElementById('username').value,
+                cnic: document.getElementById('cnic').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                plotNumber: document.getElementById('plotNumber').value
+            };
+
+            console.log('Booking submitted:', formData);
+
+            alert(`Thank you for your booking!\n\nProject: ${formData.project}\nPlot: ${formData.plotNumber}\nA confirmation will be sent to ${formData.email}\n\nOur team will contact you shortly at ${formData.phone}`);
+
+            closeBookingModal();
+            document.getElementById('bookingForm').reset();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('bookingModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeBookingModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                closeBookingModal();
+            }
+        });
+    </script>
+</body>
+
+</html>

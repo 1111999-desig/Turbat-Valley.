@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Projects - My Land Property and Developers</title>
+    <meta name="description"
+        content="Browse our exclusive portfolio of real estate projects and find your perfect property.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        .page-header {
+            padding: 120px 0 80px;
+            background: var(--dark-secondary);
+            text-align: center;
+        }
+
+        .page-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .projects-section {
+            padding: 80px 0 120px;
+            background: var(--dark);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1rem;
+            margin-bottom: 40px;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/+923222082888" target="_blank" class="whatsapp-float" aria-label="Contact us on WhatsApp">
+        <svg viewBox="0 0 32 32" fill="currentColor">
+            <path
+                d="M16 0c-8.837 0-16 7.163-16 16 0 2.825 0.737 5.607 2.137 8.048l-2.137 7.952 8.135-2.135c2.369 1.313 5.047 2.135 7.865 2.135 8.837 0 16-7.163 16-16s-7.163-16-16-16zM16 29.385c-2.547 0-5.010-0.709-7.158-2.051l-0.513-0.301-5.321 1.397 1.417-5.281-0.329-0.533c-1.449-2.341-2.213-5.035-2.213-7.795 0-7.72 6.28-14 14-14s14 6.28 14 14-6.28 14-14 14zM23.234 19.807c-0.406-0.203-2.394-1.181-2.766-1.316-0.371-0.134-0.641-0.203-0.912 0.203s-1.047 1.316-1.284 1.588c-0.236 0.271-0.473 0.305-0.879 0.102-0.406-0.203-1.713-0.632-3.263-2.011-1.205-1.073-2.019-2.399-2.256-2.805s-0.025-0.625 0.178-0.827c0.183-0.183 0.406-0.473 0.609-0.711s0.271-0.406 0.406-0.677c0.135-0.271 0.068-0.508-0.034-0.711s-0.912-2.196-1.249-3.009c-0.329-0.792-0.661-0.684-0.912-0.698-0.236-0.012-0.507-0.015-0.778-0.015s-0.711 0.102-1.082 0.508c-0.372 0.406-1.419 1.385-1.419 3.381s1.453 3.922 1.655 4.194c0.203 0.271 2.824 4.319 6.845 6.054 0.956 0.413 1.703 0.659 2.285 0.844 0.961 0.305 1.835 0.262 2.527 0.159 0.771-0.115 2.394-0.978 2.731-1.923s0.337-1.755 0.236-1.923c-0.102-0.169-0.372-0.271-0.778-0.473z" />
+        </svg>
+    </a>
+
+    <!-- Page Header -->
+    <header class="page-header">
+        <div class="container">
+            <h1 class="page-title">Our Projects</h1>
+            <p class="page-subtitle">Discover premium real estate opportunities</p>
+        </div>
+    </header>
+
+    <!-- Projects Section -->
+    <section class="projects-section">
+        <div class="container">
+            <a href="index.html" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Back to Home
+            </a>
+
+            <div class="projects-grid" id="projects-container">
+                <!-- Projects will be loaded dynamically via JS -->
+            </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 My Land Property and Developers. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Render Projects Dynamically
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('projects-container');
+            // Show newest projects first
+            const projects = DB.getProjects().reverse();
+
+            if (projects.length === 0) {
+                container.innerHTML = '<p style="color:white; text-align:center;">No projects found.</p>';
+                return;
+            }
+
+            container.innerHTML = projects.map(project => `
+                <div class="project-card" onclick="window.location.href='property.html?id=${project.id}'">
+                    <div class="project-image">
+                        <img src="${project.image}" alt="${project.title}">
+                        <div class="project-overlay">
+                            <span class="project-status">${project.status}</span>
+                        </div>
+                    </div>
+                    <div class="project-info">
+                        <h3>${project.title}</h3>
+                        <p>${project.description.substring(0, 100)}...</p>
+                        <div class="price-tag">${project.price}</div>
+                        <span class="project-link">View Details &rarr;</span>
+                    </div>
+                </div>
+            `).join('');
+        });
+    </script>
+</body>
+
+</html>
